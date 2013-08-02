@@ -1,0 +1,2 @@
+maven-fusecontainer-plugin
+==========================
