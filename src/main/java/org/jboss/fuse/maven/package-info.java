@@ -1,0 +1,1 @@
+package org.jboss.fuse.maven;
