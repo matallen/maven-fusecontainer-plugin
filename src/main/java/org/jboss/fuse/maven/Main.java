@@ -22,11 +22,17 @@ public class Main {
       public String getClientPassword() {
         return "admin";
       }
-      public String getInstallScript() {
-        return "shell:source mvn:com.truphone.esb/features/1.0.0-SNAPSHOT/karaf/installer;";
+//      public String getInstallScript() {
+//        return "shell:source mvn:com.truphone.esb/features/1.0.0-SNAPSHOT/karaf/installer;";
+//      }
+//      public int getInstallScriptTimeout() {
+//        return 30;
+//      }
+      public String[] getCommands(){
+        return new String[]{"shell:source mvn:com.truphone.esb/features/1.0.0-SNAPSHOT/karaf/installer;"};
       }
-      public int getInstallScriptTimeout() {
-        return 30;
+      public boolean getClean() {
+        return false;
       }
     });
   }

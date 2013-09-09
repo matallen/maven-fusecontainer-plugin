@@ -10,8 +10,11 @@ public interface Configuration {
   public int getTimeout();
   public String getClientUsername();
   public String getClientPassword();
-  public String getInstallScript();
-  public int getInstallScriptTimeout();
+//  public String getInstallScript();
+//  public int getInstallScriptTimeout();
+  public String[] getCommands();
+  
+  public boolean getClean();
 //  public String getExpectedStatusLine();
 //  public Integer getSecondsToWait();
 //  

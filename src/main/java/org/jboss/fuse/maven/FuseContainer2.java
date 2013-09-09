@@ -40,11 +40,17 @@ public class FuseContainer2 {
       public String getClientPassword() {
         return "admin";
       }
-      public String getInstallScript() {
-        return "install.karaf";
+//      public String getInstallScript() {
+//        return "install.karaf";
+//      }
+//      public int getInstallScriptTimeout() {
+//        return 30;
+//      }
+      public String[] getCommands(){
+        return new String[]{};
       }
-      public int getInstallScriptTimeout() {
-        return 30;
+      public boolean getClean() {
+        return false;
       }
     });
   }
