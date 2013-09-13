@@ -42,14 +42,14 @@ public class FuseContainer {
       karafFile.setExecutable(true, false);
       
       // TODO: check PATH+"/etc/users.properties contains admin=admin,admin"
-      String usersPropertiesContent=IOUtils.toString(new FileInputStream(new File(PATH+"/etc/users.properties")));
-      if (!usersPropertiesContent.contains("admin=admin,admin") && usersPropertiesContent.contains("#admin=admin,admin")){
-        usersPropertiesContent+="\nadmin=admin,admin";
-        System.err.println("appending admin=admin,admin to users.properties");
-        //TODO: write it
-      }else{
-        System.out.println("no appending user information");
-      }
+//      String usersPropertiesContent=IOUtils.toString(new FileInputStream(new File(PATH+"/etc/users.properties")));
+//      if (!usersPropertiesContent.contains("admin=admin,admin") && usersPropertiesContent.contains("#admin=admin,admin")){
+//        usersPropertiesContent+="\nadmin=admin,admin";
+//        System.err.println("appending admin=admin,admin to users.properties");
+//        //TODO: write it
+//      }else{
+//        System.out.println("not appending user information");
+//      }
       
       
       t=startContainer(config, config.getFuseHome()+"/bin/karaf");
@@ -63,6 +63,11 @@ public class FuseContainer {
       Wait.For(config.getTimeout()-waitForActiveBundles, new ToHappen() {public boolean hasHappened(){
         return executeCommand("osgi:list | grep Resolved").length()==0;
       }}, "osgi:list | grep Resolved");
+      String resolved=executeCommand("osgi:list | grep Resolved");
+      if (resolved.length()>0){
+        System.err.println("Following bundles did not start:\n"+resolved);
+        throw new RuntimeException("Some bundles did not start within the timeout time");
+      }
       
       if (null!=config.getCommands()){
         if (debug) System.out.println("FOUND COMMANDS LIST = "+config.getCommands());

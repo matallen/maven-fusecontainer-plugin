@@ -1,9 +1,14 @@
 package org.jboss.fuse.maven;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.IOUtils;
@@ -31,37 +36,18 @@ public class FuseContainerStartMojo extends AbstractFuseContainerMojo implements
         if (getSkip())
             return;
         
-        try{
-          if (container.populated()){
-            File location=download(
-                container.getGroupId(), 
-                container.getArtifactId(),
-                container.getVersion(),
-                container.getType());
-            //TOOD: unzip location to ${project.build.directory}/container
-            File container=new File(getProject().getBuild().getDirectory(), "container");
-            new UnZip().extract(location, container);
-            
-            File[] containerSubfolders=container.listFiles();
-            if (containerSubfolders.length!=1)
-              throw new RuntimeException("Unable to find fuse home, artifact contained more than 1 subfolder");
-            
-            setFuseHome(containerSubfolders[0].getCanonicalPath());
-          }else if (getFuseHome()!=null){
-            setFuseHome(new File(getFuseHome()).getCanonicalPath());
-          }else{
-            throw new RuntimeException("You must set either the <fuseHome> or <container> element.");
-          }
-        }catch(IOException e){
-          throw new RuntimeException("Unable to determine fuseHome canonical location", e);
-        }
-        
         addProjectDependenciesToClasspath();
         try {
-          // TODO: copy clean fuse instance to target/container folder
+          // download fuse and/or set fuse home
+          configureContainer();
+          
+          // check users.properties
+          configureUsersProperties();
+          
+          // TODO: copy clean fuse instance (if configured from fuseHome property) to target/container folder
           FuseContainer.instance=new FuseContainer();
           FuseContainer.instance.start(this);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             throw new MojoExecutionException("Exception: "+e.getMessage(), e);
 //        }finally{
 //          try{
@@ -113,6 +99,33 @@ public class FuseContainerStartMojo extends AbstractFuseContainerMojo implements
      */
     protected ArtifactRepository localRepository;
     
+    
+    public void configureContainer(){
+      try{
+        if (container.populated()){
+          File location=download(
+              container.getGroupId(), 
+              container.getArtifactId(),
+              container.getVersion(),
+              container.getType());
+          File container=new File(getProject().getBuild().getDirectory(), "container");
+          new UnZip().extract(location, container);
+          
+          File[] containerSubfolders=container.listFiles();
+          if (containerSubfolders.length!=1)
+            throw new RuntimeException("Unable to find fuse home, artifact contained more than 1 subfolder");
+          
+          setFuseHome(containerSubfolders[0].getCanonicalPath());
+        }else if (getFuseHome()!=null){
+          setFuseHome(new File(getFuseHome()).getCanonicalPath());
+        }else{
+          throw new RuntimeException("You must set either the <fuseHome> or <container> element.");
+        }
+      }catch(IOException e){
+        throw new RuntimeException("Unable to determine fuseHome canonical location", e);
+      }
+    }
+    
     public File download(String groupId, String artifactId, String version, String type) {
         try {
           Artifact pomArtifact = this.factory.createArtifact(groupId, artifactId, version, "", type);
@@ -127,6 +140,23 @@ public class FuseContainerStartMojo extends AbstractFuseContainerMojo implements
           getLog().error("can't resolve parent pom", e);
         }
         throw new RuntimeException("What is this?");
+    }
+    
+    public void configureUsersProperties() throws FileNotFoundException, IOException{
+      File propertiesFile=new File(getFuseHome(), "etc/users.properties");
+//      System.out.println("FILE="+propertiesFile.getPath());
+      String userPropertiesContents=IOUtils.toString(new FileInputStream(propertiesFile));
+//      System.out.println("contents="+userPropertiesContents);
+      
+      Matcher matcher = Pattern.compile(".+#admin=.+", Pattern.DOTALL).matcher(userPropertiesContents);
+//      System.out.println("matcher.matches = "+matcher.matches());
+      if (matcher.matches()){
+        userPropertiesContents+="\nadmin=admin,admin";
+        IOUtils.write(userPropertiesContents, new FileOutputStream(propertiesFile));
+        if (getDebug()) System.out.println("automatically appended user information to interact with container");
+      }else{
+        if (getDebug()) System.out.println("not appending user information");
+      }
     }
 
 }
