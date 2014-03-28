@@ -31,14 +31,19 @@ public class FuseContainer {
       clientUsername=config.getClientUsername();
       clientPassword=config.getClientPassword();
       debug=config.getDebug();
+      String xtn="";
+      
+      if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0){
+    	  xtn=".bat";
+      }
       
       // check PATH+"/bin/client" exists and is executable
-      File clientFile=new File(PATH+"/bin/client");
-      if (!clientFile.exists()) throw new RuntimeException(PATH+"/bin/client does not exist! aborting start of container!");
+      File clientFile=new File(PATH+"/bin/client"+xtn);
+      if (!clientFile.exists()) throw new RuntimeException(PATH+"/bin/client"+xtn+" does not exist! aborting start of container!");
       clientFile.setExecutable(true, false);
       
-      File karafFile=new File(PATH+"/bin/karaf");
-      if (!karafFile.exists()) throw new RuntimeException(PATH+"/bin/karaf does not exist! aborting start of container!");
+      File karafFile=new File(PATH+"/bin/karaf"+xtn);
+      if (!karafFile.exists()) throw new RuntimeException(PATH+"/bin/karaf"+xtn+" does not exist! aborting start of container!");
       karafFile.setExecutable(true, false);
       
       // TODO: check PATH+"/etc/users.properties contains admin=admin,admin"
@@ -52,12 +57,12 @@ public class FuseContainer {
 //      }
       
       
-      t=startContainer(config, config.getFuseHome()+"/bin/karaf");
+      t=startContainer(config, config.getFuseHome()+"/bin/karaf"+xtn);
       t.start();
       
       int waitForActiveBundles=15;
       Wait.For(waitForActiveBundles, new ToHappen() {public boolean hasHappened(){
-        return executeCommand("osgi:list | grep Active").length()>0;
+    	  return executeCommand("osgi:list | grep Active").length()>0;
       }}, "osgi:list | grep Active");
       
       Wait.For(config.getTimeout()-waitForActiveBundles, new ToHappen() {public boolean hasHappened(){
@@ -99,7 +104,7 @@ public class FuseContainer {
       if (debug) System.out.println("RESULT(length="+result.length()+")=\n"+result);
       return result;
     }catch(Exception sink){
-      return null;
+      return "";
     }
   }
   
