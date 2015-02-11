@@ -54,7 +54,7 @@ public class FuseContainerStartMojo extends AbstractFuseContainerMojo implements
 //            Runtime.getRuntime().exec("stty echo");
 //          }catch(Exception sink){}
         }
-        if (getDebug()) System.out.println("EXITING START MOJO!");
+        if (getDebug()) System.out.println("Fuse Started!");
     }
 
     private void addProjectDependenciesToClasspath() {

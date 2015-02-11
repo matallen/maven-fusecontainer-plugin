@@ -17,12 +17,13 @@ public class FuseContainer {
   private static String PATH=null;
   private static String clientUsername;
   private static String clientPassword;
-  private static Thread t;
+  private static Thread fuseConsoleReader;
+  private static Process fuseApplication;
   private static boolean debug=false;
   
   public void stop(Configuration config) throws InterruptedException, IOException{
     setExit(true);
-    t.stop();
+    fuseConsoleReader.stop();
   }
   
   public void start(final Configuration config) throws InterruptedException{
@@ -57,8 +58,8 @@ public class FuseContainer {
 //      }
       
       
-      t=startContainer(config, config.getFuseHome()+"/bin/karaf"+xtn);
-      t.start();
+      fuseConsoleReader=startContainer(config, config.getFuseHome()+"/bin/karaf"+xtn);
+      fuseConsoleReader.start();
       
       int waitForActiveBundles=15;
       Wait.For(waitForActiveBundles, new ToHappen() {public boolean hasHappened(){
@@ -92,12 +93,15 @@ public class FuseContainer {
       
     }catch (Exception e){
       e.printStackTrace();
+    }finally{
+      try{
+        Runtime.getRuntime().exec("stty echo");
+      }catch(Exception sink){}
     }
   }
   
   public String executeCommand(String command){
     try{
-//      System.out.println("EXECUTING: "+command);
       if (debug) System.out.println("EXECUTING '"+command+"'");
       Process p=Runtime.getRuntime().exec(new String[]{PATH+"/bin/client","-u",clientUsername,"-p",clientPassword, command});
       String result=IOUtils.toString(p.getInputStream());
@@ -114,7 +118,24 @@ public class FuseContainer {
   }
   
   private boolean exit=false;
-  public synchronized void setExit(boolean value){this.exit=value;};
+  public synchronized void setExit(boolean value){
+    this.exit=value;
+//    if (null!=fuseConsoleReader){
+      try {
+//        System.out.println("sending osgi:shutdown...");
+        // this appears not to work.. so I added the process.destroy below to terminate it abruptly for now
+        fuseApplication.getOutputStream().write("osgi:shutdown\n".getBytes());
+//        System.out.println("waiting for reader thread to exit..");
+        fuseConsoleReader.join();
+//        System.out.println("reader thread exited");
+        fuseApplication.destroy();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+//    }
+  };
   public Thread startContainer(Configuration config, String command) throws IOException{
     String[] cmd=config.getClean()?new String[]{command, "--clean"}:new String[]{command};
     if (config.getClean()){
@@ -123,20 +144,33 @@ public class FuseContainer {
       deleteDir(new File(config.getFuseHome()+ File.separator+"/instances"));
     }
     
-    final Process child=Runtime.getRuntime().exec(cmd);
-    Runnable r=new Runnable() {
+//    final Process fuseApplication=Runtime.getRuntime().exec(cmd);
+    fuseApplication=Runtime.getRuntime().exec(cmd);
+    Runnable fuseConsoleReaderLogic=new Runnable() {
       byte[] buf=new byte[256];
       public void run() {
         try {
           while(!exit){
-            child.getInputStream().read(buf);
-            System.out.print(new String(buf));
-            buf=new byte[256];
+            int available=fuseApplication.getInputStream().available();
+            if (available>0){
+              fuseApplication.getInputStream().read(buf);
+              System.out.print(new String(buf));
+              buf=new byte[256];
+            }else{
+              try {
+                Thread.currentThread().sleep(200l);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+            }
           }
-          if (debug) System.out.println("EXITING due to property exit==true!!!");
-        } catch (IOException e) {e.printStackTrace(); }
+          if (debug) System.out.println("Stopping Fuse; property exit set to true!");
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
     };
-    return new Thread(r);
+    fuseConsoleReader=new Thread(fuseConsoleReaderLogic);
+    return fuseConsoleReader;
   }
 }

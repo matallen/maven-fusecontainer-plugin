@@ -21,14 +21,15 @@ public class FuseContainerStopMojo extends AbstractFuseContainerMojo implements 
         addProjectDependenciesToClasspath();
 //        try {
           FuseContainer.instance.setExit(true);
+          
 //        }finally{
 //          try{
-//            Runtime.getRuntime().exec("/bin/stty echo");
+//            Runtime.getRuntime().exec("stty echo icanon");
 //          }catch(Exception sink){
 //            sink.printStackTrace();
 //          }
 //        }
-        System.out.println("EXITING STOP MOJO!");
+        System.out.println("Fuse Stopped!");
     }
 
     private void addProjectDependenciesToClasspath() {
