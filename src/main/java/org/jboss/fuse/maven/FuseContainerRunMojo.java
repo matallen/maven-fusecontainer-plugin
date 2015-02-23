@@ -52,28 +52,8 @@ public class FuseContainerRunMojo extends AbstractFuseContainerMojo implements C
           
           System.out.println("");
           getLog().info("Press Ctrl-C to stop the container...");
-//          System.out.println("Press Ctrl-C to stop the container...");
-//          BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
-//          while(true){
-//            String msg;
-//            try{
-//              msg=br.readLine();
-//            }catch(Exception e){}
-//            if(msg.equals("Q")) {quit=1;break;}
-//          }
           
           if (getDebug()) System.out.println("Fuse Started!");
-          
-//          Runtime.getRuntime().addShutdownHook(new Thread(
-//              new Runnable() {
-//                @Override
-//                public void run() {
-//                  System.out.println("inside ShutdownHook");
-//                  FuseContainer.instance.setExit(true);
-//                  System.exit(0);
-//                }
-//              }
-//              ));
           
           System.out.println("");
           while (true){
@@ -83,22 +63,11 @@ public class FuseContainerRunMojo extends AbstractFuseContainerMojo implements C
               FuseContainer.instance.setExit(true);
               break;
             }
-//            System.out.print(".");
-//            Thread.currentThread().sleep(10000l);
           }
-          
-//          
-//          
-//          
-//          while(true){
-//            br.read()
-//          }
-          
           
         } catch (Exception e) {
             throw new MojoExecutionException("Exception: "+e.getMessage(), e);
         }
-//        if (getDebug()) System.out.println("Fuse Started!");
     }
 
     private void addProjectDependenciesToClasspath() {
