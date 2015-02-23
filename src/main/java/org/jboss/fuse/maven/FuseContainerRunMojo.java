@@ -1,16 +1,16 @@
 package org.jboss.fuse.maven;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipFile;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
@@ -22,16 +22,15 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 
 /**
- * @goal start
+ * @goal run
  * @phase pre-integration-test
  * @requiresDependencyResolution compile
  * @threadSafe
  * @see <a href="http://maven.apache.org/developers/mojo-api-specification.html">Mojo API Specification</a>
  */
-public class FuseContainerStartMojo extends AbstractFuseContainerMojo implements Configuration {
+public class FuseContainerRunMojo extends AbstractFuseContainerMojo implements Configuration {
   
     public void execute() throws MojoExecutionException, MojoFailureException{
         if (getSkip())
@@ -50,14 +49,56 @@ public class FuseContainerStartMojo extends AbstractFuseContainerMojo implements
           // TODO: copy clean fuse instance (if configured from fuseHome property) to target/container folder
           FuseContainer.instance=new FuseContainer();
           FuseContainer.instance.start(this);
+          
+          System.out.println("");
+          getLog().info("Press Ctrl-C to stop the container...");
+//          System.out.println("Press Ctrl-C to stop the container...");
+//          BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+//          while(true){
+//            String msg;
+//            try{
+//              msg=br.readLine();
+//            }catch(Exception e){}
+//            if(msg.equals("Q")) {quit=1;break;}
+//          }
+          
+          if (getDebug()) System.out.println("Fuse Started!");
+          
+//          Runtime.getRuntime().addShutdownHook(new Thread(
+//              new Runnable() {
+//                @Override
+//                public void run() {
+//                  System.out.println("inside ShutdownHook");
+//                  FuseContainer.instance.setExit(true);
+//                  System.exit(0);
+//                }
+//              }
+//              ));
+          
+          System.out.println("");
+          while (true){
+            int i=System.in.read();
+            System.out.print(i);
+            if (i==3){ // ctrl-c
+              FuseContainer.instance.setExit(true);
+              break;
+            }
+//            System.out.print(".");
+//            Thread.currentThread().sleep(10000l);
+          }
+          
+//          
+//          
+//          
+//          while(true){
+//            br.read()
+//          }
+          
+          
         } catch (Exception e) {
             throw new MojoExecutionException("Exception: "+e.getMessage(), e);
-//        }finally{
-//          try{
-//            Runtime.getRuntime().exec("stty echo");
-//          }catch(Exception sink){}
         }
-        if (getDebug()) System.out.println("Fuse Started!");
+//        if (getDebug()) System.out.println("Fuse Started!");
     }
 
     private void addProjectDependenciesToClasspath() {

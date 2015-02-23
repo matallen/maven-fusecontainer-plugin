@@ -14,21 +14,11 @@ import org.apache.maven.plugin.MojoFailureException;
 public class FuseContainerStopMojo extends AbstractFuseContainerMojo implements Configuration {
 
     public void execute() throws MojoExecutionException, MojoFailureException{
-//        System.out.println("YYY STOPPING");  
         if (getSkip())
             return;
 
         addProjectDependenciesToClasspath();
-//        try {
-          FuseContainer.instance.setExit(true);
-          
-//        }finally{
-//          try{
-//            Runtime.getRuntime().exec("stty echo icanon");
-//          }catch(Exception sink){
-//            sink.printStackTrace();
-//          }
-//        }
+        FuseContainer.instance.setExit(true);
         System.out.println("Fuse Stopped!");
     }
 

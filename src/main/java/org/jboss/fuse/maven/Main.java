@@ -1,5 +1,9 @@
 package org.jboss.fuse.maven;
 
+import java.util.HashMap;
+import java.util.Map;
+
+
 public class Main {
 
   public static void main(String[] args) throws Exception {
@@ -21,6 +25,9 @@ public class Main {
       }
       public String getClientPassword() {
         return "admin";
+      }
+      public Map<String,String> getProperties(){
+        return new HashMap<String, String>();
       }
       public String[] getCommands(){
         return new String[]{"shell:source mvn:com.redhat.example/features/1.0-SNAPSHOT/karaf/installer;"};

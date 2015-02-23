@@ -80,7 +80,7 @@ public class FuseContainer {
         
         for(String command:config.getCommands()){
           executeCommand(command);
-          Wait.For(30, new ToHappen() {public boolean hasHappened(){
+          Wait.For(60, new ToHappen() {public boolean hasHappened(){
 //          return executeCommand("features:list | grep \"[installed\"").length()==0;
             return executeCommand("osgi:list | grep Resolved").length()==0;
           }}, "error executing command '"+command+"'");
@@ -105,6 +105,7 @@ public class FuseContainer {
       if (debug) System.out.println("EXECUTING '"+command+"'");
       Process p=Runtime.getRuntime().exec(new String[]{PATH+"/bin/client","-u",clientUsername,"-p",clientPassword, command});
       String result=IOUtils.toString(p.getInputStream());
+      if (null!=result) result=result.trim();
       if (debug) System.out.println("RESULT(length="+result.length()+")=\n"+result);
       return result;
     }catch(Exception sink){

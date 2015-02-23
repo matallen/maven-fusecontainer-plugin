@@ -3,6 +3,7 @@ package org.jboss.fuse.maven;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.project.MavenProject;
@@ -72,6 +73,13 @@ public abstract class AbstractFuseContainerMojo extends AbstractMojo implements 
     */
     private String[] commands;
     public String[] getCommands() { return commands; }
+    
+    /**
+    * @parameter expression="${fusecontainer.configs}"
+    * @since 1.0.0
+    */
+    private Map<String,String> properties;
+    public Map<String,String> getProperties() { return properties; }
  
     /** @parameter expression="${fusecontainer.container}" */
     protected Container container;

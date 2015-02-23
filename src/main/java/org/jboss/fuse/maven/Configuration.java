@@ -1,5 +1,8 @@
 package org.jboss.fuse.maven;
 
+import java.util.Map;
+
+
 public interface Configuration {
 //  public String getType();
 //  
@@ -13,6 +16,8 @@ public interface Configuration {
 //  public String getInstallScript();
 //  public int getInstallScriptTimeout();
   public String[] getCommands();
+//  public String[] getConfigs();
+  public Map<String,String> getProperties();
   
   public boolean getClean();
 //  public String getExpectedStatusLine();
